@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PAPIK</title>
+    <style>
+        html {
+            font-size: 1.5rem;
+        }
+        input {
+            font-size: 1rem;
+            width: 400px;
+        }
+        ul {
+            list-style: none;
+        }
+        label {
+            display: block;
+            width: 100px;
+        }
+        button {
+            margin: 16px auto;
+            font-size: 1rem;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h2>Generate PAPI api-key</h2>
+    </header>
+    <section>
+        <form onsubmit="send(event)">
+            <ul>
+                <li>
+                    <label for="host">Host</label>
+                    <input type="text" id="host" value="http://localhost:7777">
+                </li>
+                <li>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" value=""></li>
+                <li>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value=""></li>
+                </li>
+                <li>
+                    <label for="key">Key</label>
+                    <input type="text" id="key" value=""></li>
+                </li>
+                <li>
+                    <button type="submit">Submit</button>
+                </li>
+            </ul>
+        </form>
+        <div>
+            apiKey: <span id="apikey"></span>
+        </div>
+        <div>
+            Error: <span id="error"></span>
+        </div>
+    </section>
+    <script>
+    const checkStatus = (res) => {
+        if (res.ok) {
+            return res.json();
+        } else {
+            const { status, statusText } = res;
+            return res.json()
+                .then(error => { throw error; });
+        }
+    };
+    function send(event) {
+        event.preventDefault();
+
+        const errEl = document.getElementById('error');
+        const apikeyEl = document.getElementById('apikey');
+        errEl.textContent = '';
+        apikeyEl.textContent = '';
+
+        const inputs = Array.from(document.querySelectorAll('input'));
+        const fields = inputs.reduce((acc, input) => {
+            acc[input.id] = input.value;
+            return acc;
+        }, {});
+
+        fetch(`${location.origin}/generate`, {
+                method: 'POST',
+                body: JSON.stringify({ ...fields }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(checkStatus)
+            .then(data => {
+                // if (data.error) {
+                //     console.error(data.error);
+                //     errEl.textContent = data.error;
+                //     return;
+                // }
+                apikeyEl.textContent = data.apikey;
+            })
+            .catch(({error}) => {
+                errEl.textContent = error;
+            })
+
+    }
+    </script>
+</body>
+
+</html>
